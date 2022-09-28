@@ -1,5 +1,15 @@
 # Visualising the Catalogues of Digital Editions
 
+# Navigation Structure
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+
 ## Introduction
 
 Digital scholarly editions (DSE) are essential to arts and humanities research, but also, society and culture at large. They are the primary instrument through which textual and cultural heritage, expert knowledge, and public understanding are negotiated. Scholarly editions make documentary materials reliable, adhering to established editorial standards and rigorous intellectual practices to ensure that cultural artefacts are compiled and represented in a fashion that can be considered authoritative. 
@@ -286,7 +296,7 @@ Sahle, Patrick. 2016. “What Is a Scholarly Digital Edition?” In Digital Scho
             
 ———. 2020. “A Catalog of Digital Scholarly Editions v 4.0.” https://digitale-edition.de/index.html.
 
-  
+---  
 <!-- Footnotes -->
 [^1]: See (https://v3.digitale-edition.de/vlet-about.html) "I've been interested in digital scholarly editing roughly since 1994. I still try to keep an eye on the ongoing developments in this area and I continuously collect hints on digital editions. This list is replacing my Virtual Library Page on "(Digitale) Editionstechnik" from the year 2000 which I retrospectively would call Version 2.0. There were even earlier lists from 1998 and 1997 which I now call V1.0 and V0.8 respectively."
 [^2]: See the [FAQ section of the Dig-Ed-Cat](https://dig-ed-cat.acdh.oeaw.ac.at/faq/).
