@@ -12,7 +12,7 @@ DSE in the context of this paper are best defined using Patrick Sahle’s defini
 
 Digital editions have a long history of adapting to new challenges and possibilities presented by both changes in computational methods and research policy. While earlier DSEs were distributed through physical media, such as a CD-ROM sold through a publisher, digital platforms and browser-based access has become the standard practice for digital scholarly editions. With recent changes in EU funding directives, the majority of recent digital editions are based on open access models, further increasing accessibility of digital editions. Similarly, digital platforms providing metadata about digital editions can extend the accessibility of scholarly editing by providing the data from which to construct a history of digital scholarly editing and editions.
 
-Exploring this history and at the same time assessing the available metadata on DSEs is the aim of this section. It presents the state of the two most comprehensive available sources on digital editions and details the methodology and visualisation process undertaken. This section is part of the larger C21 Editions project , a three-year international collaboration jointly funded by the Arts & Humanities Research Council (AH/W001489/1) and Irish Research Council (IRC/W001489/1). 
+Exploring this history and at the same time assessing the available metadata on DSEs is the aim of this section. It presents the state of the two most comprehensive available sources on digital editions and details the methodology and visualisation process undertaken. This section is part of the larger [C21 Editions project](https://www.c21editions.org/) , a three-year international collaboration jointly funded by the Arts & Humanities Research Council (AH/W001489/1) and Irish Research Council (IRC/W001489/1). 
 
 ## Methodology
 
@@ -265,15 +265,25 @@ The results of this analysis contribute to a data-driven perspective on DSEs. Th
 
 ## References
 “Acdh-Oeaw/Dig_Ed_Cat: Release For Zenodo.” 2018. https://doi.org/10.5281/ZENODO.1250797.
+            
 Boot, Peter, Anna Cappellotto, Wout Dillen, Franz Fischer, Aodhán Kelly, Andreas Mertgens, Anna-Maria Sichani, Elena Spadini, and Dirk van Hulle, eds. 2017. Advances in Digital Scholarly Editing. Sidestone Press.
+            
 Dalbello, Marija. 2011. “A Genealogy of Digital Humanities.” Journal of Documentation 67 (3): 480–506. https://doi.org/10.1108/00220411111124550.
+            
 Dillen, Wout. 2019. “On Edited Archives and Archived Editions.” International Journal of Digital Humanities 1 (2): 263–77. https://doi.org/10.1007/s42803-019-00018-4.
+            
 Driscoll, Matthew James, and Elena Pierazzo, eds. 2016. Digital Scholarly Editing: Theories and Practices. Open Book Publishers. https://doi.org/10.11647/OBP.0095.
+            
 Franzini, Greta. 2012. “Gfranzini/Digeds_Cat: First Release.” Zenodo. https://doi.org/10.5281/ZENODO.1161425.
+            
 ———. (2015) 2022. “Gfranzini/DigEds_cat.” https://github.com/gfranzini/digEds_cat/blob/81df723e147e50cb68fc1eb4393b6b56cd8209e7/CONTRIBUTING.md.
+            
 Franzini, Greta, Melissa Terras, and Simon Mahony. 2019. “Digital Editions of Text: Surveying User Requirements in the Digital Humanities.” Journal on Computing and Cultural Heritage 12 (1): 1:1-1:23. https://doi.org/10.1145/3230671.
+            
 “History – TEI: Text Encoding Initiative.” n.d. Accessed March 16, 2022. https://tei-c.org/about/history/.
+            
 Sahle, Patrick. 2016. “What Is a Scholarly Digital Edition?” In Digital Scholarly Editing: Theories and Practices, edited by Matthew James Driscoll and Elena Pierazzo, 19–40. Open Book Publishers. https://doi.org/10.11647/OBP.0095.02.
+            
 ———. 2020. “A Catalog of Digital Scholarly Editions v 4.0.” https://digitale-edition.de/index.html.
 
   
@@ -284,7 +294,7 @@ Sahle, Patrick. 2016. “What Is a Scholarly Digital Edition?” In Digital Scho
 [^4]: “The data in the Catalogue is being hooked up to the [Linked Open Data (LOD)](http://programminghistorian.org/lessons/intro-to-linked-data) cloud to increase discoverability while supporting semantic integration and knowledge sharing. The linked data vocabularies currently connected to the Catalogue are [W3C Basic Geo](https://www.w3.org/2003/01/geo/), [FOAF](http://xmlns.com/foaf/spec/#), [GeoNames](http://www.geonames.org/ontology#), [Data Catalog](http://www.w3.org/ns/dcat#) and [Dublin Core Metadata](http://purl.org/dc/terms/). Institution data also links to [DNB (Deutsche Nationalbibliothek)](http://www.dnb.de/DE/Home/home_node.html) Catalogue IDs.” (“Acdh-Oeaw/Dig_Ed_Cat: Release For Zenodo” 2018)
 [^5]: [SPARQL](https://www.ontotext.com/knowledgehub/fundamentals/what-is-sparql/) is a semantic query language for databases, allowing users to run custom queries on the Dig-Ed-Cat database.
 [^6]: The data source is available [here](https://git.uni-wuppertal.de/dhsfu/sde-catalog).
-[^7]: For a detailed description of this process, the section on availability. <!-- Insert Link -->
+[^7]: For a detailed description of this process, see the [section on availability](https://github.com/mkrzmr/c21_catalogue/edit/main/index.md#availability). <!-- Insert Link -->
 [^8]: See ["History – TEI: Text Encoding Initiative” n.d.](https://tei-c.org/about/history/).
 [^9]: For a detailed discussion of loss amongst digital editions and efforts in preservation of DSEs, see the forthcoming whitepaper. <!--Link here--> 
 [^10]: For a detailed list of HTTP error codes, see the [HTTP documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). In the context of this study, all 200 status codes are successful connections, all 300 status codes are redirects, all 400 status codes are client side errors and all 500 status codes are server side errors. 
