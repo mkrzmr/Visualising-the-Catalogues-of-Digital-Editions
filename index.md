@@ -124,9 +124,157 @@ The graph shows that API access is a rare function in DSEs, and is limited to a 
 
 For edition availability, that is the assessment of how long an edition will be accessible after launch, both sources offer data. First, Dig-Ed-Cat features a value for current availability. This asks the submitting author if the edition is currently available. As Dig-Ed-Cat is an actively maintained resource, it seems that these checks are also performed periodically to identify broken links. Simply aggregating that data and comparing it against a check of all project URLs produces the following table:
 
+| May 2022 URL status check | Dig-Ed-Cat March 2022 | % of Total Count |
+|---------------------------|-----------------------|------------------|
+|                           |None (Not available)   |5.94% |
+|                           |True (Available)       |94.06% |
+|404 (Not found)            |                       |6.79% |
+|200 (Found)                |                       |93.21% |
+
+*Table 1: URL availability in Dig-Ed-Cat*
+
+These preliminary results seem to confirm that loss happens among digital editions. The difference between the two checks might be due to the time difference, and likely also due to ongoing loss. To gain a better understanding of the longevity of digital editions, it was decided to undertake a more detailed analysis of all editions listed in the more extensive catalogue maintained by Sahle. The goal was to produce an automated URL checker for each project URL listed by Sahle.
+With the latest release 4.0 the underlying data for Sahle’s catalogue is openly available. The catalogue data is a structured XML-TEI file, which means some work in Python is necessary to extract the desired data. The following section will outline the steps taken along with the code for this project.
 
 
+```python
+from bs4 import BeautifulSoup as bs
+import pandas as pd
+!pip install lxml
+```
+This section instals the required libraries for this project. BeautifulSoup is a versatile parser for structured documents such as XML and HTML. While not a TEI-specific tool, in this case it can easily be used to find and extract data from TEI tags. Pandas is used to create dataframes and perform basic operations on them. BeautifulSoup normally comes with a built-in XML parser, but in case the installation is without, the last line instals it.
 
+A look at the XML file itself shows us what we are looking for:
+
+```
+<TEI xml:id="e1"><teiHeader><fileDesc><titleStmt><title>L’année 1437 dans
+            la pratique de Pierre Christofle, notaire du Châtelet d’Orléans - Digital Scholarly Editions Catalog Entry</title><author>Catalog entry by PS</author></titleStmt><publicationStmt><publisher>Published by Patrick Sahle (Bergische Universität Wuppertal) and the project team</publisher><availability><licence target="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 (CC BY 4.0)</licence></availability></publicationStmt><sourceDesc><p>Research data collection, DSE catalog v. 4.0, based on earlier work (1996-2020)</p></sourceDesc></fileDesc><revisionDesc><listChange><change when="2018-02-21" who="PS" type="creation"/></listChange></revisionDesc></teiHeader><text><body><bibl><title>L’année 1437 dans
+            la pratique de Pierre Christofle, notaire du Châtelet d’Orléans</title><rs type="sortkey">1437</rs><ref>http://elec.enc.sorbonne.fr/christofle/index.html</ref><edition>Par Kouky Fianu avec la collaboration d’Anne Fortier.
+                    Paris: École nationale des chartes, 2016.</edition><date type="firstPubliction" when="2016"/></bibl><p>  "Pierre Christofle fut notaire
+                royal à Orléans de 1423 à 1450, attaché à la prévôté pour qui il rédigeait des
+                contrats portant le sceau de l’institution. Comme ses confrères, Pierre Christofle
+                inscrivait dans un registre et en une forme abrégée les conventions qu’il attestait.
+                Ces notes, au nombre de 387, rédigées entre le 1er janvier et le 29 décembre 1437,
+                conservées aux Archives départementales du Loiret sous la cote 3E 10144, sont ici
+                éditées dans leur ensemble. L’édition, indexée et prochainement téléchargeable,
+                permet l’enquête sur le lexique des actes." [from resource] </p><note type="labels">[hier stehen normalerweise Kommentare von mir zum internen Gebrauch]</note><desc type="material" ana="charters">Kopiar, Notariatsurkunden</desc><desc type="subject" ana="history"/><desc type="language" ana="fr"/><desc type="era" ana="late_ma"/></body></text></TEI>
+    <TEI xml:id="e2"><teiHeader><fileDesc><titleStmt><title>The Aberdeen...
+
+```
+For every of the 789 entries, the data from the <title>,  <ref> and the <date> for the first publication should be extracted. The structure of XML-TEI makes it easy to extract the values from these tags. First, the document needs to be loaded and parsed - read - by BeautifulSoup to recognize the tags. At this point, we do not need to specify whether the document is encoded in TEI or not.
+
+```python
+  with open("catalog_TEI.xml", "r") as file: #load the file
+    bs_content = bs(file, 'lxml') #parse as XML
+
+col ={'title':[],'url':[],'year':[]} #create columns for the DataFrame
+df = pd.DataFrame(col) #create DataFrame
+df.head() #check, should bring up empty DataFrame with columns now
+```
+
+The downloaded file “catalog_TEI.xml” is loaded and read by the XML parser. An empty DataFrame is created with three columns title, url, year as these are the values we are looking for at this point.
+  
+```python
+result = bs_content.find_all("ref") #simple search to export all URLs, even review links
+for t in result:
+    print(t.text)
+```
+  
+To show how well BeautifulSoup can process XML documents, this short statement is enough to find all <ref> tags and print out their text. Using t.text, we can select if we want the text of a tag or the attributes. This will become important later on. For now, the code prints out all links in the document:
+
+![Screenshot 2022-09-23 at 14-49-30 Sahle_Url_check - Jupyter Notebook](https://user-images.githubusercontent.com/33122848/192795630-3b883a3b-da6c-42b6-ae1b-cddb653f98f9.png) *Figure 12: Extracted links*
+
+Immediately, some issues become apparent. Some links are links to reviews or further information about the edition, not the edition itself. Also, some plain text in the <ref> field was also extracted. This happened because we selected all <ref> tags, when only specific tags are of interest for this analysis. Making use of the hierarchical structure of XML, we can select only the <ref> tags within a <text> tag:
+
+```python
+results = bs_content.find_all("text") #find all <text> tags
+for entry in results:
+    output = [] #create empty list for output
+    title = entry.bibl.title.text #select the title by its tag
+    title = " ".join(title.strip().split()) #Some titles have extra whitespaces, this removes them
+    url= entry.bibl.ref.text #again, select urls by the <ref> tag
+    date = (entry.find(type ="firstPublication")) #select only dates with the attribute "firstPublication"
+    year = (entry.bibl.date.get('when')) #select the value of the  "when" field - the publication year
+    df.loc[len(df.index)]=(title,url,year)
+
+```  
+ Each <text> tag indicates a separate entry in the catalogue. By searching for all and then iterating over the results, we can extract the required information for each entry. BeautifulSoup can navigate through the structure of the XML document and find the right <title> tag via its place in the hierarchy. As some titles extend over multiple lines and have line breaks and whitespaces between them, the next line removes them. Similarly, URLs are extracted by only selecting the <ref> tag inside the <bibl> inside the <entry> tag. This removes reviews and URLs not related to this project.
+Extracting the correct date is a bit more complicated: within the <date> tag, multiple attributes indicate first publication and relaunch, such as 
+`<date type="firstPubliction" when="1996"/><date type="relaunch" when="2015"/>`
+Extracting the whole <date> tag would thus yield multiple dates. The solution is to first only select <date> tags that have the attribute “firstPublication” and then to extract the value from the “when” field. Finally, all three extracted values are added to the DataFrame.
+  
+![Screenshot 2022-09-23 at 15-18-33 Sahle_Url_check - Jupyter Notebook](https://user-images.githubusercontent.com/33122848/192796313-97737bbf-d0ac-43e5-8bb3-80ae8c7d2e55.png) *Figure 13: Extracted DSE data*
+
+The next step is to prepare the URL status check. For this, we import a library that allows us to send out simple HTTP requests to the collected URLs.
+
+```python
+import requests #this will allow us to check html status of the pages
+df['status'] = "NaN" #add a new column to the dataframe
+```
+An empty column is added to the DataFrame, this is where the HTTP status report will go.
+  
+```python
+def check_url(url): #function to check all urls and report back
+    try:
+        request = requests.get(url, verify=False, timeout=10)
+        print ("Checked URL "+ str(url) +", Status was "+str(request.status_code))
+        return request.status_code
+    except requests.exceptions.RequestException as e: #basic error handling, if no response is received, continue on
+        return e
+```
+  
+Then, we need a basic function to check the HTML status of the pages. The above code tries to get a request status code. Because some pages will not produce one, we also need a way to deal with any connection errors we might encounter. A very simple solution is to just return the error message and continue on with the next URL.
+
+```python  
+df['status'] = df['url'].apply(check_url) #now checking all urls for their status code, might take a minute
+df.head() # checking one more time
+df.to_csv('ouput.csv') #and output to a csv file for visualisation
+```
+  
+With the above, the function is executed on each URL in the DataFrame and the result is stored in the newly created status column. The result should look like this:
+
+![Screenshot 2022-09-23 at 15-25-38 Sahle_Url_check - Jupyter Notebook](https://user-images.githubusercontent.com/33122848/192797185-8c0c2850-9aef-40f6-a790-acefdc02be53.png) *Figure 14: Dataframe with completed URL check*
+
+With the last line, we export the DataFrame to a .csv file for any further data cleaning and processing. Three main steps in data cleaning in this example were:
+
+- In a few cases, no URL was in the catalogue and so no check could be run. These few empty field must be discarded for the analysis
+- All connection errors are aggregated under the general error label. They count towards unreachable editions.
+- It was found that a number of links referred to the Internet Archive. These links were marked up and visualised as a separate category.
+
+Finally, the output can be plotted to show the percentage distribution of status codes for each year:
+
+![Dashboard 4](https://user-images.githubusercontent.com/33122848/192797753-97dde1b3-cdb8-403d-bc6d-e45f8da0abb5.png) *Figure 15: DSE availability September 2022*
+
+The results show that loss occurs for all years from 2021 onwards (excluding pre-1994, where scarcity of sources skews the results somewhat). It confirms the findings from Dig-Ed-Cat, but also shows how loss increases over time. If links referring to the internet archive are counted as signs of loss (which they should, for the Internet Archive’s crawler has no access to the underlying database and is likely not able to capture an edition in its entirety), the picture is sobering. Pre-2004 editions experienced a loss rate of no less than 25%, with 50% of 1999 editions being unreachable. In this brief case study, redirects are counted towards reachable sites, an assumption which is likely not correct in all cases as redirects will not in all cases lead to the original resource. The lack of completely lost pages (404) in the pre-1996 years aligns with Sahle beginning work on the catalogue in 1998. Earlier editions, already lost by then, probably never made it into the catalogue.
+
+From a Web archiving perspective, the fact that a large percentage of Internet Archive links are found shows that no widely used preservation solution exists for Digital Editions. It is further unclear if the authors themselves deposited material into the Internet Archive, or if the list curators used the Internet Archive to reconstruct a lost edition. In either case, these links must be seen as not providing the full edition in any way.
+
+## Conclusions
+
+Visualising the two main data sources on digital editions shows the application of a data-driven approach to the historiography of digital editions. It produced insight into the development of the field over time as well as provided a critique of the existing data sources. While both sources are very different in their approach (Generally speaking, Sahle’s list is a curated collection of editions while the Dig-Ed-Cat is a data agglomerator) they were both very valuable sources of information for this study. 
+
+The data analysis was, where possible, focussed on providing a longitudinal approach to assess the development of the field over time. Following a general overview of the number of projects in both data sources,  results showed the average project duration decreased over time, while the number of projects per year kept increasing. An investigation of languages and project locations confirmed a strong focus on Europe and North America. Referring back to the documentation supplied with both data sets, this data bias was acknowledged by both sources.
+
+Moving on from a data overview was the discussion of centralisation in digital editions, that is the number of projects in relation to the number of institutions. It was found that the field is largely decentralised, with few institutions featuring more than one entry in the Dig-Ed-Cat. This centralisation of the field was related to the use of tools and licensing in digital scholarly editions. Using TEI-XML as an example, it could be shown that the introduction of text encoding standards coincides with a drop in centralisation. Further, licensing models (Creative Commons / proprietary licences) and Open Access models experienced an upward trend in the early 2000s, which has been sustained since. 
+
+To understand the level of interoperability between digital editions, APIs in digital editions and export/ print functionality were visualised as graphs. While APIs and print views are far apart in terms of functionality, they both represent functions for data export and potential data re-use in other contexts. The analysis was able to show that, while print functionality has been a part of digital editions throughout, APIs are only found in a few editions. These results indicate that interoperability between digital editions is low, with no widely used data exchange format and only a handful of APIs available.
+
+As the final part, the analysis was concerned with the availability and sustainability of digital editions. Here, the larger number of editions in Sahle’s list was chosen as the primary data source. The relevant data (Edition name, Year of first publication and URL) were extracted from the structured data source. Necessary steps were described to enable reproducibility and increase transparency in the analysis. Distinguishing between plainly unavailable URLs, server errors and links to the Internet Archive, loss rates could be determined to be around 5% per year, leading up to 25% to 50% of pre-2000 DSEs being unavailable. This result shows the need for a sustainable preservation solution for DSEs.
+
+## References
+“Acdh-Oeaw/Dig_Ed_Cat: Release For Zenodo.” 2018. https://doi.org/10.5281/ZENODO.1250797.
+Boot, Peter, Anna Cappellotto, Wout Dillen, Franz Fischer, Aodhán Kelly, Andreas Mertgens, Anna-Maria Sichani, Elena Spadini, and Dirk van Hulle, eds. 2017. Advances in Digital Scholarly Editing. Sidestone Press.
+Dalbello, Marija. 2011. “A Genealogy of Digital Humanities.” Journal of Documentation 67 (3): 480–506. https://doi.org/10.1108/00220411111124550.
+Dillen, Wout. 2019. “On Edited Archives and Archived Editions.” International Journal of Digital Humanities 1 (2): 263–77. https://doi.org/10.1007/s42803-019-00018-4.
+Driscoll, Matthew James, and Elena Pierazzo, eds. 2016. Digital Scholarly Editing: Theories and Practices. Open Book Publishers. https://doi.org/10.11647/OBP.0095.
+Franzini, Greta. 2012. “Gfranzini/Digeds_Cat: First Release.” Zenodo. https://doi.org/10.5281/ZENODO.1161425.
+———. (2015) 2022. “Gfranzini/DigEds_cat.” https://github.com/gfranzini/digEds_cat/blob/81df723e147e50cb68fc1eb4393b6b56cd8209e7/CONTRIBUTING.md.
+Franzini, Greta, Melissa Terras, and Simon Mahony. 2019. “Digital Editions of Text: Surveying User Requirements in the Digital Humanities.” Journal on Computing and Cultural Heritage 12 (1): 1:1-1:23. https://doi.org/10.1145/3230671.
+“History – TEI: Text Encoding Initiative.” n.d. Accessed March 16, 2022. https://tei-c.org/about/history/.
+Sahle, Patrick. 2016. “What Is a Scholarly Digital Edition?” In Digital Scholarly Editing: Theories and Practices, edited by Matthew James Driscoll and Elena Pierazzo, 19–40. Open Book Publishers. https://doi.org/10.11647/OBP.0095.02.
+———. 2020. “A Catalog of Digital Scholarly Editions v 4.0.” https://digitale-edition.de/index.html.
+
+  
 <!-- Footnotes -->
 [^1]: See (https://v3.digitale-edition.de/vlet-about.html) "I've been interested in digital scholarly editing roughly since 1994. I still try to keep an eye on the ongoing developments in this area and I continuously collect hints on digital editions. This list is replacing my Virtual Library Page on "(Digitale) Editionstechnik" from the year 2000 which I retrospectively would call Version 2.0. There were even earlier lists from 1998 and 1997 which I now call V1.0 and V0.8 respectively."
 [^2]: See the [FAQ section of the Dig-Ed-Cat](https://dig-ed-cat.acdh.oeaw.ac.at/faq/).
