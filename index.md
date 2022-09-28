@@ -1,5 +1,7 @@
 # Visualising the Catalogues of Digital Editions
 
+[Dr. Michael Kurzmeier](https://orcid.org/0000-0003-4925-5197), [Dr. James O'Sullivan](http://research.ucc.ie/profiles/A003/jamesosullivan), [Michael Pidd](https://www.dhi.ac.uk/pidd), [Dr. Órla Murphy](http://publish.ucc.ie/researchprofiles/A014/omurphy), [Prof. Bridgette Wessels](https://www.gla.ac.uk/schools/socialpolitical/staff/bridgettewessels/)
+
 # Navigation Structure
 {: .no_toc }
 
